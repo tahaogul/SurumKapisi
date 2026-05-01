@@ -1,0 +1,22 @@
+FROM golang:1.22-alpine AS builder
+RUN apk add --no-cache git ca-certificates
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -ldflags="-s -w" -o /surumkapisi-server ./cmd/server
+
+FROM alpine:3.19
+RUN apk add --no-cache ca-certificates wget tzdata
+RUN addgroup -S skapp && adduser -S skapp -G skapp
+WORKDIR /app
+COPY --from=builder /surumkapisi-server /app/surumkapisi-server
+COPY web/ /app/web/
+COPY sample_data/ /app/sample_data/
+RUN chown -R skapp:skapp /app
+USER skapp
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD wget -q --spider http://localhost:8080/health || exit 1
+CMD ["/app/surumkapisi-server"]

@@ -1,0 +1,61 @@
+{{define "content"}}
+<div class="page-title-row">
+    <div>
+        <h1 class="page-title">🛡️ Güvenlik Açıkları</h1>
+        <p class="page-subtitle">Bilinen güvenlik açığı veritabanı</p>
+    </div>
+    <div>
+        <span class="badge badge-info" style="font-size:0.85rem;">{{len .Vulns}} Kayıt</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📋 Güvenlik Açıkları</span>
+        <input type="text" id="table-search" placeholder="🔍  CVE veya paket ara..."
+            style="padding:6px 14px;border-radius:var(--radius-sm);background:var(--bg-tertiary);
+            border:1px solid var(--border-subtle);color:var(--text-primary);font-family:inherit;font-size:0.82rem;outline:none;">
+    </div>
+    <div class="card-body">
+        {{if .Vulns}}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>CVE ID</th>
+                        <th>Önem</th>
+                        <th>CVSS</th>
+                        <th>Paket</th>
+                        <th>Etkilenen Sürümler</th>
+                        <th>Düzeltilmiş Sürüm</th>
+                        <th>Açıklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Vulns}}
+                    <tr>
+                        <td style="font-weight:700"><code>{{.VulnID}}</code></td>
+                        <td><span class="badge badge-severity-{{toLower .Severity}}">{{toUpper .Severity}}</span></td>
+                        <td style="font-weight:700;">{{printf "%.1f" .CVSSScore}}</td>
+                        <td style="font-weight:600;">{{.PackageName}}</td>
+                        <td><code>{{.AffectedVersions}}</code></td>
+                        <td>{{if .FixedVersion}}<span
+                                style="color:var(--success);font-weight:600">{{.FixedVersion}}</span>{{else}}<span
+                                style="color:var(--text-muted)">—</span>{{end}}</td>
+                        <td style="font-size:0.82rem;max-width:250px;overflow:hidden;text-overflow:ellipsis;">
+                            {{.Description}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{else}}
+        <div class="empty-state">
+            <div class="empty-icon">🛡️</div>
+            <div class="empty-title">Güvenlik açığı verisi bulunmuyor</div>
+            <div class="empty-desc">Veri yüklemek için: <code>POST /api/vulnerabilities/import</code></div>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}

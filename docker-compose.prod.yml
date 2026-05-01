@@ -1,0 +1,73 @@
+# Production Docker Compose with Nginx reverse proxy
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: surumkapisi
+      POSTGRES_USER: skuser
+      POSTGRES_PASSWORD: ${SK_DB_PASSWORD:-skpass123}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skuser -d surumkapisi"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - sk-internal
+    restart: unless-stopped
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    environment:
+      SK_DB_HOST: postgres
+      SK_DB_PORT: "5432"
+      SK_DB_NAME: surumkapisi
+      SK_DB_USER: skuser
+      SK_DB_PASSWORD: ${SK_DB_PASSWORD:-skpass123}
+      SK_DB_SSLMODE: disable
+      SK_ADMIN_TOKEN: ${SK_ADMIN_TOKEN:-sk-admin-token-2024}
+      SK_LISTEN_ADDR: ":8080"
+      SK_SIGNING_KEY_PATH: /app/keys
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - signing_keys:/app/keys
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sk-internal
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # Uncomment for TLS:
+      # - ./deploy/certs:/etc/nginx/certs:ro
+    depends_on:
+      server:
+        condition: service_healthy
+    networks:
+      - sk-internal
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  signing_keys:
+
+networks:
+  sk-internal:
+    driver: bridge

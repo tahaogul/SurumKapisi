@@ -1,0 +1,146 @@
+{{define "content"}}
+<div class="page-title-row">
+    <div>
+        <h1 class="page-title">📊 Dashboard</h1>
+        <p class="page-subtitle">Yazılım tedarik zinciri güvenlik durumu</p>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card slide-up">
+        <div class="stat-icon">📁</div>
+        <div class="stat-value" data-count="{{.TotalProjects}}">{{.TotalProjects}}</div>
+        <div class="stat-label">Toplam Proje</div>
+    </div>
+    <div class="stat-card slide-up" style="animation-delay:0.1s">
+        <div class="stat-icon">🔨</div>
+        <div class="stat-value" data-count="{{.TotalBuilds}}">{{.TotalBuilds}}</div>
+        <div class="stat-label">Toplam Yapı</div>
+    </div>
+    <div class="stat-card slide-up" style="animation-delay:0.2s">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value" data-count="{{.PassedBuilds}}">{{.PassedBuilds}}</div>
+        <div class="stat-label">Geçen Yapı</div>
+    </div>
+    <div class="stat-card slide-up" style="animation-delay:0.3s">
+        <div class="stat-icon">❌</div>
+        <div class="stat-value" data-count="{{.FailedBuilds}}">{{.FailedBuilds}}</div>
+        <div class="stat-label">Engellenen Yapı</div>
+    </div>
+</div>
+
+<!-- Projects Grid -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📁 Projeler</span>
+        <a href="/projects" class="btn btn-secondary btn-sm">Tümünü Gör →</a>
+    </div>
+    <div class="card-body">
+        {{if .Projects}}
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">
+            {{range .Projects}}
+            <a href="/projects/{{.ID}}/builds" style="text-decoration:none;color:inherit;">
+                <div class="project-card">
+                    <div class="project-name">{{.Name}}</div>
+                    <div class="project-meta">
+                        {{if .RepoURL}}🔗 {{.RepoURL}}{{else}}📁 {{.Slug}}{{end}}
+                    </div>
+                    <div class="project-stats">
+                        <div class="project-stat">
+                            <div class="num">{{.Builds}}</div>
+                            <div class="lbl">Yapılar</div>
+                        </div>
+                        <div class="project-stat">
+                            <div class="num">{{.PassRate}}</div>
+                            <div class="lbl">Geçme Oranı</div>
+                        </div>
+                        <div class="project-stat">
+                            <div class="num">{{.PassCount}}</div>
+                            <div class="lbl">Geçen</div>
+                        </div>
+                        <div class="project-stat">
+                            <div class="num">{{.FailCount}}</div>
+                            <div class="lbl">Engellenen</div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {{end}}
+        </div>
+        {{else}}
+        <div class="empty-state">
+            <div class="empty-icon">📁</div>
+            <div class="empty-title">Henüz proje oluşturulmadı</div>
+            <div class="empty-desc">API üzerinden proje oluşturmak için: <code>POST /api/projects</code></div>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<!-- Recent Builds -->
+{{if .RecentBuilds}}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">🔨 Son Yapılar</span>
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Proje</th>
+                        <th>Yapı #</th>
+                        <th>Git Commit</th>
+                        <th>Karar</th>
+                        <th>Tarih</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .RecentBuilds}}
+                    <tr>
+                        <td style="font-weight:600">{{.ProjectName}}</td>
+                        <td>#{{.BuildNumber}}</td>
+                        <td><code data-copy="{{.GitCommit}}">{{truncate .GitCommit 8}}</code></td>
+                        <td>
+                            <span class="decision-dot {{toLower .Decision}}"></span>
+                            <span class="badge badge-{{.Decision}}">{{.Decision}}</span>
+                        </td>
+                        <td><span data-time="{{.CreatedAt}}">{{.CreatedAt}}</span></td>
+                        <td><a href="/builds/{{.ID}}" class="btn btn-secondary btn-sm">Detay →</a></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{end}}
+
+<!-- Quick Actions -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">⚡ Hızlı Komutlar</span>
+    </div>
+    <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
+            <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);padding:16px;">
+                <div style="font-weight:600;margin-bottom:8px;color:var(--text-primary);">📦 SBOM Oluştur</div>
+                <code
+                    style="font-size:0.78rem;display:block;word-break:break-all;">surumkapisi sbom --project . --out sbom.json</code>
+            </div>
+            <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);padding:16px;">
+                <div style="font-weight:600;margin-bottom:8px;color:var(--text-primary);">📋 Politika Değerlendir</div>
+                <code
+                    style="font-size:0.78rem;display:block;word-break:break-all;">surumkapisi evaluate --sbom sbom.json --server URL --token TOKEN</code>
+            </div>
+            <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);padding:16px;">
+                <div style="font-weight:600;margin-bottom:8px;color:var(--text-primary);">✍️ Artifact İmzala</div>
+                <code
+                    style="font-size:0.78rem;display:block;word-break:break-all;">surumkapisi sign --artifact app.jar --server URL --token TOKEN</code>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

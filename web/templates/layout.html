@@ -1,0 +1,99 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} — SürümKapısı</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo">🔐</div>
+                <div>
+                    <h1>SürümKapısı</h1>
+                </div>
+                <span class="version">v1.0</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Genel Bakış</div>
+                    <a href="/" class="nav-item {{if eq .ActivePage " dashboard"}}active{{end}}">
+                        <span class="icon">📊</span> Dashboard
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Yönetim</div>
+                    <a href="/projects" class="nav-item {{if eq .ActivePage " projects"}}active{{end}}">
+                        <span class="icon">📁</span> Projeler
+                    </a>
+                    <a href="/vulnerabilities" class="nav-item {{if eq .ActivePage " vulnerabilities"}}active{{end}}">
+                        <span class="icon">🛡️</span> Güvenlik Açıkları
+                    </a>
+                    <a href="/exceptions" class="nav-item {{if eq .ActivePage " exceptions"}}active{{end}}">
+                        <span class="icon">📋</span> İstisnalar
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">İzleme</div>
+                    <a href="/audit" class="nav-item {{if eq .ActivePage " audit"}}active{{end}}">
+                        <span class="icon">🔍</span> Denetim Günlüğü
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Araçlar</div>
+                    <a href="/api-docs" class="nav-item {{if eq .ActivePage " api-docs"}}active{{end}}">
+                        <span class="icon">📡</span> API Dokümantasyonu
+                    </a>
+                    <a href="/settings" class="nav-item {{if eq .ActivePage " settings"}}active{{end}}">
+                        <span class="icon">⚙️</span> Ayarlar
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status">
+                    <span class="dot"></span>
+                    Sistem Aktif
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content">
+            <header class="page-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button id="sidebar-toggle" class="btn-secondary btn-sm"
+                        style="display:none;border:1px solid var(--border-primary);background:transparent;color:var(--text-secondary);padding:6px 10px;border-radius:6px;cursor:pointer;"
+                        onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+                    {{if .Breadcrumbs}}
+                    <div class="breadcrumb">
+                        {{range $i, $b := .Breadcrumbs}}
+                        {{if $i}}<span class="sep">›</span>{{end}}
+                        {{if $b.URL}}<a href="{{$b.URL}}">{{$b.Label}}</a>
+                        {{else}}<span class="current">{{$b.Label}}</span>{{end}}
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
+                <div class="header-actions">
+                    <code style="font-size:0.75rem;color:var(--text-muted)">Token: sk-admin-***</code>
+                </div>
+            </header>
+
+            <div class="page-content fade-in">
+                {{template "content" .}}
+            </div>
+        </main>
+    </div>
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>
+{{end}}

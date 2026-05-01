@@ -1,0 +1,58 @@
+{{define "content"}}
+<div class="page-title-row">
+    <div>
+        <h1 class="page-title">📡 API Dokümantasyonu</h1>
+        <p class="page-subtitle">SürümKapısı REST API referansı</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">🔑 Kimlik Doğrulama</span>
+    </div>
+    <div class="card-body">
+        <p style="color:var(--text-secondary);margin-bottom:12px;">Tüm API isteklerinde
+            <code>Authorization: Bearer TOKEN</code> header'ı gereklidir.</p>
+        <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);padding:14px;">
+            <code
+                style="font-size:0.82rem;">curl -H "Authorization: Bearer sk-admin-token-2024" http://localhost:8080/api/projects</code>
+        </div>
+    </div>
+</div>
+
+{{range .Endpoints}}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">
+            <span class="badge {{.MethodClass}}" style="font-size:0.7rem;padding:3px 10px;">{{.Method}}</span>
+            <code style="font-size:0.95rem;background:transparent;color:var(--text-primary);padding:0;">{{.Path}}</code>
+        </span>
+    </div>
+    <div class="card-body">
+        <p style="color:var(--text-secondary);margin-bottom:12px;">{{.Description}}</p>
+        {{if .RequestBody}}
+        <div style="margin-bottom:12px;">
+            <div
+                style="font-weight:600;font-size:0.82rem;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;">
+                İstek Gövdesi</div>
+            <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);padding:14px;overflow-x:auto;">
+                <pre
+                    style="margin:0;color:var(--text-accent);font-family:'JetBrains Mono',monospace;font-size:0.78rem;">{{.RequestBody}}</pre>
+            </div>
+        </div>
+        {{end}}
+        {{if .ResponseBody}}
+        <div>
+            <div
+                style="font-weight:600;font-size:0.82rem;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;">
+                Yanıt Örneği</div>
+            <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);padding:14px;overflow-x:auto;">
+                <pre
+                    style="margin:0;color:var(--text-accent);font-family:'JetBrains Mono',monospace;font-size:0.78rem;">{{.ResponseBody}}</pre>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}
+{{end}}

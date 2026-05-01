@@ -1,0 +1,91 @@
+{{define "content"}}
+<div class="page-title-row">
+    <div>
+        <h1 class="page-title">🔨 Yapılar — {{.Project.Name}}</h1>
+        <p class="page-subtitle">Proje güvenlik kapısı geçmişi</p>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">🔨</div>
+        <div class="stat-value" data-count="{{.Stats.Total}}">{{.Stats.Total}}</div>
+        <div class="stat-label">Toplam Yapı</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value" data-count="{{.Stats.Pass}}">{{.Stats.Pass}}</div>
+        <div class="stat-label">Geçen</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">❌</div>
+        <div class="stat-value" data-count="{{.Stats.Fail}}">{{.Stats.Fail}}</div>
+        <div class="stat-label">Engellenen</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-value" data-count="{{.Stats.Pending}}">{{.Stats.Pending}}</div>
+        <div class="stat-label">Bekleyen</div>
+    </div>
+</div>
+
+{{if .Builds}}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📋 Yapı Geçmişi</span>
+        <input type="text" id="table-search" placeholder="🔍  Ara..."
+            style="padding:6px 14px;border-radius:var(--radius-sm);background:var(--bg-tertiary);
+            border:1px solid var(--border-subtle);color:var(--text-primary);font-family:inherit;font-size:0.82rem;outline:none;">
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Git Commit</th>
+                        <th>Branch</th>
+                        <th>Tag</th>
+                        <th>Karar</th>
+                        <th>Durum</th>
+                        <th>Neden</th>
+                        <th>Tarih</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Builds}}
+                    <tr>
+                        <td style="font-weight:700;color:var(--text-primary)">#{{.BuildNumber}}</td>
+                        <td><code data-copy="{{.GitCommit}}">{{truncate .GitCommit 8}}</code></td>
+                        <td>{{if .GitBranch}}{{.GitBranch}}{{else}}<span style="color:var(--text-muted)">—</span>{{end}}
+                        </td>
+                        <td>{{if .GitTag}}<span class="badge badge-info">{{.GitTag}}</span>{{else}}<span
+                                style="color:var(--text-muted)">—</span>{{end}}</td>
+                        <td>
+                            <span class="decision-dot {{toLower .Decision}}"></span>
+                            <span class="badge badge-{{.Decision}}">{{.Decision}}</span>
+                        </td>
+                        <td><span class="badge badge-neutral">{{.Status}}</span></td>
+                        <td style="font-size:0.82rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;">
+                            {{.DecisionReason}}</td>
+                        <td><span data-time="{{formatTime .CreatedAt}}">{{formatTime .CreatedAt}}</span></td>
+                        <td><a href="/builds/{{.ID}}" class="btn btn-primary btn-sm">Detay →</a></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{else}}
+<div class="card">
+    <div class="empty-state">
+        <div class="empty-icon">🔨</div>
+        <div class="empty-title">Bu proje için henüz yapı bulunmuyor</div>
+        <div class="empty-desc">CLI ile ilk build'inizi oluşturun.</div>
+    </div>
+</div>
+{{end}}
+{{end}}

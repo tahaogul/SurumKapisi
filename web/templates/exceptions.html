@@ -1,0 +1,58 @@
+{{define "content"}}
+<div class="page-title-row">
+    <div>
+        <h1 class="page-title">📋 İstisnalar (Muafiyetler)</h1>
+        <p class="page-subtitle">Aktif politika istisnaları ve süreleri</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📋 Aktif İstisnalar</span>
+    </div>
+    <div class="card-body">
+        {{if .Exceptions}}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Proje</th>
+                        <th>Kural Tipi</th>
+                        <th>Kural Değeri</th>
+                        <th>Neden</th>
+                        <th>Onaylayan Rol</th>
+                        <th>Bitiş Tarihi</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Exceptions}}
+                    <tr>
+                        <td>{{.ProjectName}}</td>
+                        <td><code>{{.RuleType}}</code></td>
+                        <td><code>{{.RuleValue}}</code></td>
+                        <td style="font-size:0.82rem;max-width:250px;">{{.Reason}}</td>
+                        <td><span class="badge badge-info">{{.ApprovedByRole}}</span></td>
+                        <td><span data-time="{{formatTime .ExpiresAt}}">{{formatTime .ExpiresAt}}</span></td>
+                        <td>
+                            {{if .IsExpired}}
+                            <span class="badge badge-fail">Süresi Dolmuş</span>
+                            {{else}}
+                            <span class="badge badge-pass">Aktif</span>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{else}}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">Aktif istisna bulunmuyor</div>
+            <div class="empty-desc">Muafiyet oluşturmak için: <code>POST /api/exceptions</code></div>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}

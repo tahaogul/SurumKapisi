@@ -1,0 +1,66 @@
+{{define "content"}}
+<div class="page-title-row">
+    <div>
+        <h1 class="page-title">🔍 Denetim Günlüğü</h1>
+        <p class="page-subtitle">Tüm sistem olayları — append-only hash-zincirli</p>
+    </div>
+</div>
+
+{{if .ChainStatus}}
+<div class="alert {{if .ChainValid}}alert-success{{else}}alert-danger{{end}}">
+    {{if .ChainValid}}🔗 Hash zinciri bütünlüğü doğrulandı: {{.ChainStatus}}{{else}}⚠️ Hash zinciri bozulması tespit
+    edildi: {{.ChainStatus}}{{end}}
+</div>
+{{end}}
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📋 Olaylar</span>
+        <input type="text" id="table-search" placeholder="🔍  Olay ara..."
+            style="padding:6px 14px;border-radius:var(--radius-sm);background:var(--bg-tertiary);
+            border:1px solid var(--border-subtle);color:var(--text-primary);font-family:inherit;font-size:0.82rem;outline:none;">
+    </div>
+    <div class="card-body">
+        {{if .Events}}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Eylem</th>
+                        <th>Aktör</th>
+                        <th>Kaynak Türü</th>
+                        <th>Kaynak ID</th>
+                        <th>Önceki Hash</th>
+                        <th>Güncel Hash</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Events}}
+                    <tr>
+                        <td><span data-time="{{index . " created_at"}}">{{index . "created_at"}}</span></td>
+                        <td>
+                            <span class="badge badge-info" style="font-size:0.72rem">{{index . "action"}}</span>
+                        </td>
+                        <td>{{index . "actor"}}</td>
+                        <td><span class="badge badge-neutral">{{index . "resource_type"}}</span></td>
+                        <td><code style="font-size:0.72rem" data-copy="{{index . "
+                                resource_id"}}">{{truncate (index . "resource_id") 12}}</code></td>
+                        <td><code style="font-size:0.68rem;">{{truncate (index . "prev_hash") 10}}</code></td>
+                        <td><code style="font-size:0.68rem;" data-copy="{{index . "
+                                current_hash"}}">{{truncate (index . "current_hash") 10}}</code></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{else}}
+        <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">Henüz denetim kaydı bulunmuyor</div>
+            <div class="empty-desc">API üzerinden yapılan her işlem burada kaydedilir.</div>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}

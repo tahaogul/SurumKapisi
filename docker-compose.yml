@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: surumkapisi
+      POSTGRES_USER: skuser
+      POSTGRES_PASSWORD: skpass123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skuser -d surumkapisi"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - sk-network
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "8080:8080"
+    environment:
+      SK_DB_HOST: postgres
+      SK_DB_PORT: "5432"
+      SK_DB_NAME: surumkapisi
+      SK_DB_USER: skuser
+      SK_DB_PASSWORD: skpass123
+      SK_DB_SSLMODE: disable
+      SK_ADMIN_TOKEN: sk-admin-token-2024
+      SK_LISTEN_ADDR: ":8080"
+      SK_SIGNING_KEY_PATH: /app/keys
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - signing_keys:/app/keys
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sk-network
+
+volumes:
+  pgdata:
+  signing_keys:
+
+networks:
+  sk-network:
+    driver: bridge

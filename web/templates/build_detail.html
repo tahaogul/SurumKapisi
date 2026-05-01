@@ -1,0 +1,234 @@
+{{define "content"}}
+<div class="page-title-row">
+    <div>
+        <h1 class="page-title">
+            🔍 Yapı #{{.Build.BuildNumber}}
+            <span class="badge badge-{{.Build.Decision}}"
+                style="font-size:0.55em;vertical-align:middle;margin-left:12px;">{{.Build.Decision}}</span>
+        </h1>
+        <p class="page-subtitle">Detaylı güvenlik analizi ve sonuçlar</p>
+    </div>
+    <div class="header-actions">
+        <a href="/api/reports/{{.Build.ID}}/html?token=sk-admin-token-2024" target="_blank"
+            class="btn btn-secondary btn-sm">📄 HTML Rapor</a>
+        <a href="/api/reports/{{.Build.ID}}?token=sk-admin-token-2024" target="_blank" class="btn btn-primary btn-sm">📊
+            JSON Rapor</a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">{{if eq .Build.Decision "PASS"}}✅{{else if eq .Build.Decision "FAIL"}}❌{{else}}⏳{{end}}
+        </div>
+        <div class="stat-value" style="font-size:1.4rem;">{{.Build.Decision}}</div>
+        <div class="stat-label">Karar</div>
+    </div>
+    {{if .SBOM}}
+    <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-value" data-count="{{.SBOM.ComponentCount}}">{{.SBOM.ComponentCount}}</div>
+        <div class="stat-label">Bileşen</div>
+    </div>
+    {{end}}
+    <div class="stat-card">
+        <div class="stat-icon">🛡️</div>
+        <div class="stat-value" data-count="{{.VulnCount}}">{{.VulnCount}}</div>
+        <div class="stat-label">Güvenlik Açığı</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📎</div>
+        <div class="stat-value" data-count="{{len .Artifacts}}">{{len .Artifacts}}</div>
+        <div class="stat-label">Artefakt</div>
+    </div>
+</div>
+
+<div class="info-grid">
+    <!-- Build Info -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">📋 Yapı Bilgileri</span>
+        </div>
+        <div class="card-body">
+            <div class="info-row"><span class="info-label">Yapı No</span><span
+                    class="info-value">#{{.Build.BuildNumber}}</span></div>
+            <div class="info-row"><span class="info-label">Git Commit</span><span class="info-value"><code
+                        data-copy="{{.Build.GitCommit}}">{{.Build.GitCommit}}</code></span></div>
+            <div class="info-row"><span class="info-label">Branch</span><span
+                    class="info-value">{{.Build.GitBranch}}</span></div>
+            {{if .Build.GitTag}}<div class="info-row"><span class="info-label">Tag</span><span class="info-value"><span
+                        class="badge badge-info">{{.Build.GitTag}}</span></span></div>{{end}}
+            <div class="info-row"><span class="info-label">Durum</span><span class="info-value"><span
+                        class="badge badge-neutral">{{.Build.Status}}</span></span></div>
+            <div class="info-row"><span class="info-label">Karar</span><span class="info-value"><span
+                        class="badge badge-{{.Build.Decision}}">{{.Build.Decision}}</span></span></div>
+            <div class="info-row"><span class="info-label">Neden</span><span
+                    class="info-value">{{.Build.DecisionReason}}</span></div>
+        </div>
+    </div>
+
+    {{if .SBOM}}
+    <!-- SBOM -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">📦 SBOM Özeti</span>
+        </div>
+        <div class="card-body">
+            <div class="info-row"><span class="info-label">Format</span><span class="info-value"><span
+                        class="badge badge-info">{{.SBOM.Format}}</span></span></div>
+            <div class="info-row"><span class="info-label">Bileşen Sayısı</span><span class="info-value"
+                    style="font-weight:700">{{.SBOM.ComponentCount}}</span></div>
+            <div class="info-row"><span class="info-label">SHA256</span><span class="info-value"><code
+                        data-copy="{{.SBOM.SHA256Hash}}"
+                        style="font-size:0.72em">{{truncate .SBOM.SHA256Hash 24}}</code></span></div>
+        </div>
+    </div>
+    {{end}}
+</div>
+
+{{if .Evaluation}}
+<!-- Evaluation -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📋 Politika Değerlendirmesi</span>
+        <span class="badge badge-{{.Evaluation.Decision}}">{{.Evaluation.Decision}}</span>
+    </div>
+    <div class="card-body">
+        <div class="info-row"><span class="info-label">Karar Hash</span><span class="info-value"><code
+                    data-copy="{{.Evaluation.DecisionHash}}">{{truncate .Evaluation.DecisionHash 24}}</code></span>
+        </div>
+        {{if .EvalResults}}
+        <div class="table-container" style="margin-top:16px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kural</th>
+                        <th>Sonuç</th>
+                        <th>Mesaj</th>
+                        <th>İhlaller</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .EvalResults}}
+                    <tr>
+                        <td style="font-weight:600"><code>{{.RuleType}}</code></td>
+                        <td>
+                            {{if .Waived}}<span class="badge"
+                                style="background:rgba(245,158,11,0.15);color:var(--warning);border:1px solid rgba(245,158,11,0.25);">⚠️
+                                Muaf</span>
+                            {{else if .Passed}}<span class="badge badge-pass">✅ Geçti</span>
+                            {{else}}<span class="badge badge-fail">❌ Başarısız</span>
+                            {{end}}
+                        </td>
+                        <td style="font-size:0.82rem">{{.Message}}</td>
+                        <td style="font-size:0.78rem;color:var(--danger);">
+                            {{range .Violations}}
+                            <div style="margin-bottom:2px;">• {{.}}</div>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}
+
+{{if .Provenance}}
+<!-- Provenance -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">🔗 Provenance (Kanıt Kaydı)</span>
+    </div>
+    <div class="card-body">
+        <div class="info-row"><span class="info-label">Git Commit</span><span class="info-value"><code
+                    data-copy="{{.Provenance.GitCommit}}">{{.Provenance.GitCommit}}</code></span></div>
+        <div class="info-row"><span class="info-label">SBOM Hash</span><span class="info-value"><code
+                    data-copy="{{.Provenance.SBOMHash}}">{{truncate .Provenance.SBOMHash 24}}</code></span></div>
+        <div class="info-row"><span class="info-label">Karar Hash</span><span class="info-value"><code
+                    data-copy="{{.Provenance.DecisionHash}}">{{truncate .Provenance.DecisionHash 24}}</code></span>
+        </div>
+        <div class="info-row"><span class="info-label">İmza</span><span class="info-value">{{if
+                .Provenance.Signature}}<span class="badge badge-pass">✅ İmzalı</span>{{else}}<span
+                    class="badge badge-neutral">Yok</span>{{end}}</span></div>
+    </div>
+</div>
+{{end}}
+
+{{if .Artifacts}}
+<!-- Artifacts -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📎 Artefaktlar</span>
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ad</th>
+                        <th>Tür</th>
+                        <th>SHA256</th>
+                        <th>Boyut</th>
+                        <th>İmza</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Artifacts}}
+                    <tr>
+                        <td style="font-weight:600">{{.Name}}</td>
+                        <td><span class="badge badge-neutral">{{.ArtifactType}}</span></td>
+                        <td><code data-copy="{{.SHA256Hash}}">{{truncate .SHA256Hash 16}}</code></td>
+                        <td>{{formatBytes .SizeBytes}}</td>
+                        <td>{{if .Signed}}<span class="badge badge-pass">✅ İmzalı</span>{{else}}<span
+                                class="badge badge-fail">❌</span>{{end}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{if .Dependencies}}
+<!-- Dependencies -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📚 Bağımlılıklar ({{len .Dependencies}})</span>
+        <input type="text" id="table-search" placeholder="🔍  Paket ara..."
+            style="padding:6px 14px;border-radius:var(--radius-sm);background:var(--bg-tertiary);
+            border:1px solid var(--border-subtle);color:var(--text-primary);font-family:inherit;font-size:0.82rem;outline:none;">
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Paket</th>
+                        <th>Versiyon</th>
+                        <th>Ekosistem</th>
+                        <th>PURL</th>
+                        <th>Lisans</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Dependencies}}
+                    <tr>
+                        <td style="font-weight:600">{{.Name}}</td>
+                        <td><code>{{.Version}}</code></td>
+                        <td><span class="badge badge-neutral">{{.Ecosystem}}</span></td>
+                        <td style="font-size:0.78rem"><code>{{truncate .PURL 40}}</code></td>
+                        <td>{{if .License}}<span class="badge badge-info">{{.License}}</span>{{else}}<span
+                                style="color:var(--text-muted)">—</span>{{end}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{end}}
+{{end}}

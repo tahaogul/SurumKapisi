@@ -1,0 +1,98 @@
+// Jenkins Declarative Pipeline — SürümKapısı Entegrasyonu
+// Bu dosyayı Jenkinsfile olarak kopyalayın.
+
+pipeline {
+    agent any
+
+    environment {
+        SK_SERVER_URL = credentials('surumkapisi-server-url')
+        SK_TOKEN      = credentials('surumkapisi-token')
+        SK_PROJECT_ID = credentials('surumkapisi-project-id')
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                sh 'echo "Building application..."'
+                // Uygulama build adımlarınız
+                sh './gradlew build || mvn package || npm run build'
+            }
+        }
+
+        stage('Security Gate') {
+            steps {
+                script {
+                    // SBOM oluştur
+                    sh 'surumkapisi sbom --project . --out sbom.json'
+
+                    // Politika değerlendir
+                    // Exit code 2 = FAIL → pipeline durur
+                    def exitCode = sh(
+                        script: """
+                            surumkapisi evaluate \
+                                --sbom sbom.json \
+                                --server ${SK_SERVER_URL} \
+                                --token ${SK_TOKEN} \
+                                --project-id ${SK_PROJECT_ID} \
+                                --policy .surumkapisi.yml
+                        """,
+                        returnStatus: true
+                    )
+
+                    if (exitCode == 2) {
+                        error("🚫 SürümKapısı: Güvenlik kapısı KAPALI — politika ihlali tespit edildi")
+                    } else if (exitCode != 0) {
+                        error("❌ SürümKapısı: Değerlendirme hatası (exit code: ${exitCode})")
+                    }
+
+                    echo "✅ SürümKapısı: Güvenlik kapısı AÇIK"
+                }
+            }
+        }
+
+        stage('Sign Artifact') {
+            when {
+                branch 'main'
+            }
+            steps {
+                sh """
+                    surumkapisi sign \
+                        --artifact target/app.jar \
+                        --server ${SK_SERVER_URL} \
+                        --token ${SK_TOKEN}
+                """
+            }
+        }
+
+        stage('Generate Report') {
+            steps {
+                sh """
+                    surumkapisi report \
+                        --server ${SK_SERVER_URL} \
+                        --token ${SK_TOKEN} \
+                        --format html
+
+                    surumkapisi report \
+                        --server ${SK_SERVER_URL} \
+                        --token ${SK_TOKEN} \
+                        --format json
+                """
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'report-*', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'sbom.json', allowEmptyArchive: true
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo '❌ Pipeline başarısız — güvenlik raporunu kontrol edin'
+        }
+        success {
+            echo '✅ Pipeline başarılı — tüm güvenlik kontrolleri geçti'
+        }
+    }
+}

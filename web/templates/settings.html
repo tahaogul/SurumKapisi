@@ -1,0 +1,63 @@
+{{define "content"}}
+<div class="page-title-row">
+    <div>
+        <h1 class="page-title">⚙️ Ayarlar</h1>
+        <p class="page-subtitle">Platform yapılandırması ve bilgileri</p>
+    </div>
+</div>
+
+<div class="info-grid">
+    <div class="card">
+        <div class="card-header"><span class="card-title">🖥️ Sunucu Bilgileri</span></div>
+        <div class="card-body">
+            <div class="info-row"><span class="info-label">Versiyon</span><span class="info-value"><span
+                        class="badge badge-info">v1.0.0</span></span></div>
+            <div class="info-row"><span class="info-label">Go Versiyonu</span><span
+                    class="info-value">{{.GoVersion}}</span></div>
+            <div class="info-row"><span class="info-label">Dinleme Adresi</span><span
+                    class="info-value"><code>{{.ListenAddr}}</code></span></div>
+            <div class="info-row"><span class="info-label">Veritabanı</span><span class="info-value"><span
+                        class="badge badge-pass">Bağlı</span></span></div>
+            <div class="info-row"><span class="info-label">Uptime</span><span class="info-value">{{.Uptime}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><span class="card-title">🔐 İmzalama</span></div>
+        <div class="card-body">
+            <div class="info-row"><span class="info-label">Algoritma</span><span class="info-value">RSA-2048 (PKCS#1
+                    v1.5)</span></div>
+            <div class="info-row"><span class="info-label">Hash</span><span class="info-value">SHA-256</span></div>
+            <div class="info-row"><span class="info-label">Anahtar Durumu</span><span class="info-value"><span
+                        class="badge badge-pass">Aktif</span></span></div>
+            <div class="info-row"><span class="info-label">Sigstore Desteği</span><span class="info-value"><span
+                        class="badge badge-neutral">Planlanıyor</span></span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><span class="card-title">📦 Desteklenen Ekosistemler</span></div>
+        <div class="card-body">
+            <div class="info-row"><span class="info-label">NPM (Node.js)</span><span
+                    class="info-value"><code>package-lock.json</code></span></div>
+            <div class="info-row"><span class="info-label">Python (PyPI)</span><span
+                    class="info-value"><code>requirements.txt</code>, <code>poetry.lock</code></span></div>
+            <div class="info-row"><span class="info-label">Maven</span><span
+                    class="info-value"><code>pom.xml</code></span></div>
+            <div class="info-row"><span class="info-label">Gradle</span><span
+                    class="info-value"><code>gradle.lockfile</code></span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><span class="card-title">📋 SBOM Formatları</span></div>
+        <div class="card-body">
+            <div class="info-row"><span class="info-label">CycloneDX</span><span class="info-value"><span
+                        class="badge badge-pass">v1.5 — Aktif</span></span></div>
+            <div class="info-row"><span class="info-label">SPDX</span><span class="info-value"><span
+                        class="badge badge-pass">v2.3 — Aktif</span></span></div>
+        </div>
+    </div>
+</div>
+{{end}}

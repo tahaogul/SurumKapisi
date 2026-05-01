@@ -1,0 +1,110 @@
+# GitHub Actions — SürümKapısı Entegrasyonu
+# Bu dosyayı .github/workflows/surumkapisi.yml olarak kopyalayın.
+
+name: SürümKapısı Security Gate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  SK_SERVER_URL: ${{ secrets.SURUMKAPISI_SERVER_URL }}
+  SK_TOKEN: ${{ secrets.SURUMKAPISI_TOKEN }}
+  SK_PROJECT_ID: ${{ secrets.SURUMKAPISI_PROJECT_ID }}
+
+jobs:
+  security-gate:
+    name: "🔐 Security Gate"
+    runs-on: ubuntu-latest
+    outputs:
+      build_id: ${{ steps.gate.outputs.build_id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install SürümKapısı CLI
+        run: |
+          go install github.com/surumkapisi/surumkapisi/cmd/agent@latest || true
+          # Alternatif: önceden derlenmiş binary
+          # curl -Lo /usr/local/bin/surumkapisi ${SK_SERVER_URL}/downloads/surumkapisi-linux-amd64
+          # chmod +x /usr/local/bin/surumkapisi
+
+      - name: Generate SBOM
+        run: surumkapisi sbom --project . --out sbom.json
+
+      - name: Evaluate Policy
+        id: gate
+        run: |
+          surumkapisi evaluate \
+            --sbom sbom.json \
+            --server $SK_SERVER_URL \
+            --token $SK_TOKEN \
+            --project-id $SK_PROJECT_ID \
+            --policy .surumkapisi.yml
+
+          # Save build ID
+          if [ -f .surumkapisi-build-id ]; then
+            echo "build_id=$(cat .surumkapisi-build-id)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sbom
+          path: sbom.json
+          retention-days: 30
+
+  sign:
+    name: "✍️ Sign Artifact"
+    needs: security-gate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sign Artifact
+        run: |
+          surumkapisi sign \
+            --artifact dist/app.tar.gz \
+            --server $SK_SERVER_URL \
+            --token $SK_TOKEN \
+            --build-id ${{ needs.security-gate.outputs.build_id }}
+
+  report:
+    name: "📊 Generate Report"
+    needs: security-gate
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Generate Reports
+        run: |
+          surumkapisi report \
+            --build ${{ needs.security-gate.outputs.build_id }} \
+            --server $SK_SERVER_URL \
+            --token $SK_TOKEN \
+            --format html
+
+          surumkapisi report \
+            --build ${{ needs.security-gate.outputs.build_id }} \
+            --server $SK_SERVER_URL \
+            --token $SK_TOKEN \
+            --format json
+
+      - name: Upload Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: report-*
+          retention-days: 90

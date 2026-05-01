@@ -1,0 +1,65 @@
+{{define "content"}}
+<div class="page-title-row">
+    <div>
+        <h1 class="page-title">📁 Projeler</h1>
+        <p class="page-subtitle">Tüm yazılım projeleri ve güvenlik durumları</p>
+    </div>
+</div>
+
+{{if .Projects}}
+<div style="margin-bottom:20px;">
+    <input type="text" id="table-search" placeholder="🔍  Proje ara..." style="width:100%;max-width:400px;padding:10px 16px;border-radius:var(--radius-md);
+        background:var(--bg-tertiary);border:1px solid var(--border-subtle);
+        color:var(--text-primary);font-family:inherit;font-size:0.9rem;outline:none;">
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Proje Adı</th>
+                <th>Slug</th>
+                <th>Repository</th>
+                <th>Yapı Sayısı</th>
+                <th>Geçme Oranı</th>
+                <th>Geçen / Engellenen</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Projects}}
+            <tr>
+                <td style="font-weight:600;color:var(--text-primary)">
+                    <a href="/projects/{{.ID}}/builds">{{.Name}}</a>
+                </td>
+                <td><code>{{.Slug}}</code></td>
+                <td>
+                    {{if .RepoURL}}
+                    <a href="{{.RepoURL}}" target="_blank" style="font-size:0.82rem;">{{.RepoURL}}</a>
+                    {{else}}
+                    <span style="color:var(--text-muted)">—</span>
+                    {{end}}
+                </td>
+                <td><span class="badge badge-info">{{.Builds}}</span></td>
+                <td style="font-weight:600;">{{.PassRate}}</td>
+                <td>
+                    <span style="color:var(--success)">{{.PassCount}}</span>
+                    /
+                    <span style="color:var(--danger)">{{.FailCount}}</span>
+                </td>
+                <td><a href="/projects/{{.ID}}/builds" class="btn btn-secondary btn-sm">Yapılar →</a></td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{else}}
+<div class="card">
+    <div class="empty-state">
+        <div class="empty-icon">📁</div>
+        <div class="empty-title">Henüz proje oluşturulmadı</div>
+        <div class="empty-desc">CLI veya API ile proje oluşturmaya başlayın.</div>
+    </div>
+</div>
+{{end}}
+{{end}}

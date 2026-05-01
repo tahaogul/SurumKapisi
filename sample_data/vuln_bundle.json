@@ -1,0 +1,61 @@
+{
+  "format": "surumkapisi-vuln-bundle",
+  "version": "1.0",
+  "vulnerabilities": [
+    {
+      "vuln_id": "CVE-2024-1001",
+      "source": "manual",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "package_name": "lodash",
+      "affected_versions": "<4.17.21",
+      "fixed_version": "4.17.21",
+      "description": "Prototype Pollution in lodash allows attackers to modify Object prototype",
+      "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-1001"
+    },
+    {
+      "vuln_id": "CVE-2024-1002",
+      "source": "manual",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "package_name": "express",
+      "affected_versions": "<4.18.2",
+      "fixed_version": "4.18.2",
+      "description": "Open redirect vulnerability in Express.js",
+      "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-1002"
+    },
+    {
+      "vuln_id": "CVE-2024-1003",
+      "source": "manual",
+      "severity": "critical",
+      "cvss_score": 10.0,
+      "package_name": "log4j-core",
+      "affected_versions": "<2.17.1",
+      "fixed_version": "2.17.1",
+      "description": "Log4Shell - Remote Code Execution via JNDI lookup",
+      "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+    },
+    {
+      "vuln_id": "CVE-2024-1004",
+      "source": "manual",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "package_name": "requests",
+      "affected_versions": "<2.31.0",
+      "fixed_version": "2.31.0",
+      "description": "Server-Side Request Forgery in Python requests library",
+      "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-1004"
+    },
+    {
+      "vuln_id": "CVE-2024-1005",
+      "source": "manual",
+      "severity": "high",
+      "cvss_score": 7.2,
+      "package_name": "django",
+      "affected_versions": "<4.2.8",
+      "fixed_version": "4.2.8",
+      "description": "SQL Injection in Django ORM",
+      "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-1005"
+    }
+  ]
+}
